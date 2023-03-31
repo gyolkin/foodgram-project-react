@@ -1,7 +1,6 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import (generics, mixins, permissions, status, views,
                             viewsets)
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -13,9 +12,8 @@ from .paginators import LimitPagination
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (CreateRecipeSerializer, CustomTokenSerializer,
                           IngredientSerializer, RecipeSerializer,
-                          SetPasswordSerializer, SubscribeUserSerializer,
-                          TagSerializer, UserSerializer)
-from .utils import file_create, get_user_from_access_token
+                          SubscribeUserSerializer, TagSerializer)
+from .utils import file_create
 
 
 class LoginView(views.APIView):
@@ -31,32 +29,6 @@ class LoginView(views.APIView):
                 'auth_token': str(refresh.access_token),
             })
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class LogoutView(views.APIView):
-    """Представление для внесения refresh-токена в черный список."""
-    def post(self, request):
-        auth_header = request.META.get('HTTP_AUTHORIZATION')
-        if auth_header is None:
-            return Response(
-                {'errors': 'Авторизационные данные не предоставлены.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        auth_type, access_token = auth_header.split(' ')
-        if auth_type != 'Bearer':
-            return Response(
-                {'errors': 'Некорректный тип токена.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        user = get_user_from_access_token(access_token)
-        if user is None:
-            return Response(
-                {'errors': 'Неправильный ACCESS TOKEN.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        refresh_token = RefreshToken.for_user(user)
-        refresh_token.blacklist()
-        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class TagViewSet(mixins.ListModelMixin,
@@ -100,54 +72,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = (permissions.IsAuthenticated,)
         return (permission() for permission in permission_classes)
-
-
-class UserListCreateView(generics.ListCreateAPIView):
-    """Представление для получения списка пользователей или создания нового."""
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    permission_classes = (permissions.AllowAny,)
-    pagination_class = PageNumberPagination
-
-    def post(self, request):
-        serializer = self.serializer_class(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            response_data = serializer.data.copy()
-            response_data.pop('is_subscribed', None)
-            return Response(response_data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class UserDetailView(views.APIView):
-    """Представление для получения данных пользователя по id."""
-
-    def get(self, request, id):
-        user = get_object_or_404(User, id=id)
-        serializer = UserSerializer(user, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class UserPersonalView(views.APIView):
-    """Представление для получения данных авторизованного пользователя."""
-
-    def get(self, request):
-        user = request.user
-        serializer = UserSerializer(user, context={'request': request})
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-
-class SetPasswordView(views.APIView):
-    """Представление для изменения пароля."""
-
-    def post(self, request):
-        serializer = SetPasswordSerializer(
-            data=request.data, context={'request': request}
-        )
-        if serializer.is_valid():
-            serializer.save()
-            return Response(status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class SubscribitionsView(generics.ListAPIView):
@@ -233,15 +157,12 @@ class ShoppingListView(views.APIView):
 
     def post(self, request, id):
         recipe = get_object_or_404(Recipe, id=id)
-        shopping_list, _ = ShoppingList.objects.get_or_create(
-            user=request.user
-        )
-        if shopping_list.recipes.filter(id=id).exists():
+        if ShoppingList.objects.filter(user=request.user, recipe=recipe).exists():
             return Response(
                 {'errors': 'Вы уже добавили этот рецепт.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        shopping_list.recipes.add(recipe)
+        shopping_list = ShoppingList(user=request.user, recipe=recipe)
         shopping_list.save()
         serializer = BasicRecipeSerializer(
             recipe, context={'request': request}
@@ -251,14 +172,13 @@ class ShoppingListView(views.APIView):
     def delete(self, request, id):
         recipe = get_object_or_404(Recipe, id=id)
         shopping_list = ShoppingList.objects.filter(
-            user=request.user, recipes=recipe).first()
+            user=request.user, recipe=recipe).first()
         if not shopping_list:
             return Response(
                 {'errors': 'У вас нет этого рецепта в списке покупок.'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        shopping_list.recipes.remove(recipe)
-        shopping_list.save()
+        shopping_list.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
@@ -266,6 +186,12 @@ class DownloadShoppingList(views.APIView):
     """Представление для скачивания шоппинг-листа."""
 
     def get(self, request):
-        shopping_list = get_object_or_404(ShoppingList, user=request.user)
-        recipes = shopping_list.recipes.all()
+        shopping_list = ShoppingList.objects.filter(user=request.user)
+        if not shopping_list.exists():
+            return Response(
+                {'errors': 'У вас нет шоппинг-листов.'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        recipes_ids = shopping_list.values_list('recipe_id', flat=True)
+        recipes = Recipe.objects.filter(id__in=recipes_ids)
         return file_create(recipes)

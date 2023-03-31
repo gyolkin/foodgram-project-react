@@ -1,7 +1,8 @@
+from django.core.validators import MinValueValidator
 from django.db import models
 
-from .validators import validate_hex
 from users.models import User
+from .validators import validate_hex
 
 
 class Tag(models.Model):
@@ -47,7 +48,9 @@ class Recipe(models.Model):
     image = models.ImageField(
         upload_to='images'
     )
-    cooking_time = models.PositiveSmallIntegerField()
+    cooking_time = models.PositiveSmallIntegerField(
+        validators=(MinValueValidator(1),)
+    )
     author = models.ForeignKey(
         User,
         related_name='recipes',
@@ -74,14 +77,14 @@ class RecipeIngredient(models.Model):
     )
     ingredient = models.ForeignKey(
         Ingredient,
-        related_name='ingredient_recipes',
+        related_name='+',
         on_delete=models.CASCADE
     )
     amount = models.PositiveSmallIntegerField()
 
 
 class Favourite(models.Model):
-    """Список любимого."""
+    """Пользовательский список избранного."""
     user = models.ForeignKey(
         User,
         related_name='liker',
@@ -89,19 +92,38 @@ class Favourite(models.Model):
     )
     recipe = models.ForeignKey(
         Recipe,
-        related_name='liking',
+        related_name='+',
         on_delete=models.CASCADE
     )
 
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=('user', 'recipe'),
+                name='unique_favourite'
+            ),
+        )
+
 
 class ShoppingList(models.Model):
-    """Шоппинг-лист."""
-    user = models.OneToOneField(
+    """Пользовательский шоппинг-лист."""
+    user = models.ForeignKey(
         User,
         related_name='shopper',
         on_delete=models.CASCADE
     )
-    recipes = models.ManyToManyField(Recipe)
+    recipe = models.ForeignKey(
+        Recipe,
+        related_name='+',
+        on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = (
+            models.UniqueConstraint(
+                fields=('user', 'recipe'),
+                name='unique_shopping_list'
+            ),
+        )
 
     def __str__(self):
         return f'{self.user.username}: лист покупок'

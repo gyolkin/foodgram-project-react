@@ -1,11 +1,13 @@
 from django.contrib.auth import authenticate
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
+from django.core.validators import MaxLengthValidator
 
 from content.models import (Favourite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingList, Tag)
 from core.seralizers import BasicRecipeSerializer, BasicUserSerializer
 from users.models import User
+from users.validators import validate_username
 
 
 class CustomTokenSerializer(serializers.Serializer):
@@ -25,7 +27,23 @@ class UserSerializer(BasicUserSerializer):
     class Meta:
         model = User
         fields = BasicUserSerializer.Meta.fields + ('password',)
-        extra_kwargs = {'password': {'write_only': True}}
+        extra_kwargs = {
+            'password': {
+                'write_only': True, 'validators': [MaxLengthValidator(150)]
+                },
+            'username': {
+                'validators': [validate_username, MaxLengthValidator(150)]
+                },
+            'first_name': {
+                'validators': [MaxLengthValidator(150)]
+                },
+            'last_name': {
+                'validators': [MaxLengthValidator(150)]
+                },
+            'email': {
+                'validators': [MaxLengthValidator(254)]
+                },
+            }
 
     def create(self, validated_data):
         user = User(
@@ -50,31 +68,6 @@ class SubscribeUserSerializer(BasicUserSerializer):
 
     def get_recipes_count(self, obj):
         return obj.recipes.count()
-
-
-class SetPasswordSerializer(serializers.Serializer):
-    """Сериалайзер для работы с паролями."""
-    current_password = serializers.CharField()
-    new_password = serializers.CharField()
-
-    def validate_current_password(self, value):
-        if not self.context['request'].user.check_password(value):
-            raise serializers.ValidationError(
-                'Текущий пароль недействителен.'
-            )
-        return value
-
-    def validate_new_password(self, value):
-        if len(value) < 8:
-            raise serializers.ValidationError(
-                'Новый пароль должен быть не короче 8 символов.'
-            )
-        return value
-
-    def save(self, **kwargs):
-        user = self.context['request'].user
-        user.set_password(self.validated_data['new_password'])
-        user.save()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -133,7 +126,7 @@ class RecipeSerializer(BasicRecipeSerializer):
     def get_is_in_shopping_cart(self, obj):
         user = self.context['request'].user
         if user.is_authenticated:
-            return ShoppingList.objects.filter(recipes=obj, user=user).exists()
+            return ShoppingList.objects.filter(recipe=obj, user=user).exists()
         return False
 
 
@@ -152,7 +145,7 @@ class CreateRecipeIngredientSerializer(serializers.ModelSerializer):
 class CreateRecipeSerializer(serializers.ModelSerializer):
     """Сериалайзер для работы с рецептами при добавлении нового."""
     ingredients = CreateRecipeIngredientSerializer(
-        many=True, source='recipe_ingredients', read_only=True
+        many=True, source='recipe_ingredients'
     )
     tags = serializers.PrimaryKeyRelatedField(
         queryset=Tag.objects.all(), many=True
@@ -166,7 +159,6 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         )
 
     def create(self, validated_data):
-        print(validated_data)
         ingredients_data = validated_data.pop('recipe_ingredients')
         tags = validated_data.pop('tags')
         author = self.context['request'].user

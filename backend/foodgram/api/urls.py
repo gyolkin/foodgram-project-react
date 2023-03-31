@@ -1,11 +1,10 @@
 from django.urls import include, path
+from djoser.views import TokenDestroyView, UserViewSet
 from rest_framework.routers import SimpleRouter
 
-from .views import (DownloadShoppingList, FavouriteView,
-                    IngredientViewSet, RecipeViewSet, SetPasswordView,
-                    ShoppingListView, SubscribeView, SubscribitionsView,
-                    TagViewSet, UserDetailView, UserListCreateView,
-                    UserPersonalView, LoginView, LogoutView)
+from .views import (DownloadShoppingList, FavouriteView, IngredientViewSet,
+                    LoginView, RecipeViewSet, ShoppingListView, SubscribeView,
+                    SubscribitionsView, TagViewSet)
 
 router = SimpleRouter()
 
@@ -32,23 +31,18 @@ urlpatterns = [
     ),
     path(
         'users/',
-        UserListCreateView.as_view(),
-        name='users'
+        UserViewSet.as_view({'get': 'list', 'post': 'create'}),
+        name='user_list'
     ),
     path(
         'users/<int:id>/',
-        UserDetailView.as_view(),
+        UserViewSet.as_view({'get': 'retrieve'}),
         name='user_detail'
     ),
     path(
         'users/me/',
-        UserPersonalView.as_view(),
+        UserViewSet.as_view({'get': 'me'}),
         name='user_me'
-    ),
-    path(
-        'users/set_password/',
-        SetPasswordView.as_view(),
-        name='set_password'
     ),
     path(
         'users/subscriptions/',
@@ -61,13 +55,18 @@ urlpatterns = [
         name='subscribe'
     ),
     path(
+        'users/set_password/',
+        UserViewSet.as_view({'post': 'set_password'}),
+        name='user_set_password'
+    ),
+    path(
         'auth/token/login/',
         LoginView.as_view(),
         name='login'
     ),
     path(
         'auth/token/logout/',
-        LogoutView.as_view(),
+        TokenDestroyView.as_view(),
         name='logout'
     ),
 ]
