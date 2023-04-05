@@ -1,7 +1,30 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-User = get_user_model()
+from .constants import LENGTH_150, LENGTH_254
+from .validators import validate_username
+
+
+class User(AbstractUser):
+    """Кастомная пользовательская модель."""
+    username = models.CharField(
+        max_length=LENGTH_150,
+        unique=True,
+        validators=[validate_username]
+    )
+    email = models.EmailField(
+        max_length=LENGTH_254,
+        unique=True
+    )
+    password = models.CharField(
+        max_length=LENGTH_150
+    )
+    first_name = models.CharField(
+        max_length=LENGTH_150
+    )
+    last_name = models.CharField(
+        max_length=LENGTH_150
+    )
 
 
 class Follow(models.Model):
@@ -24,7 +47,7 @@ class Follow(models.Model):
                 name='unique_follow'
             ),
             models.CheckConstraint(
-                check=models.Q(user=models.F('following')),
+                check=~models.Q(user=models.F('following')),
                 name='no_self_follow'
             ),
         )

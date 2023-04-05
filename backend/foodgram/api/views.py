@@ -10,7 +10,7 @@ from users.models import Follow, User
 from .filters import RecipeFilter
 from .paginators import LimitPagination
 from .permissions import IsAuthorOrReadOnly
-from .serializers import (CreateRecipeSerializer, CustomTokenSerializer,
+from .serializers import (CreateRecipeSerializer, TokenSerializer,
                           IngredientSerializer, RecipeSerializer,
                           SubscribeUserSerializer, TagSerializer)
 from .utils import file_create
@@ -21,7 +21,7 @@ class LoginView(views.APIView):
     permission_classes = (permissions.AllowAny,)
 
     def post(self, request):
-        serializer = CustomTokenSerializer(data=request.data)
+        serializer = TokenSerializer(data=request.data)
         if serializer.is_valid(raise_exception=True):
             user = serializer.validated_data
             refresh = RefreshToken.for_user(user)
@@ -72,6 +72,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
         else:
             permission_classes = (permissions.IsAuthenticated,)
         return (permission() for permission in permission_classes)
+
+    def create(self, request):
+        create_serializer = self.get_serializer(data=request.data)
+        create_serializer.is_valid(raise_exception=True)
+        recipe = create_serializer.save()
+        response_serializer = RecipeSerializer(
+            recipe, context={'request': request}
+        )
+        return Response(
+            response_serializer.data,
+            status=status.HTTP_201_CREATED
+        )
 
 
 class SubscribitionsView(generics.ListAPIView):

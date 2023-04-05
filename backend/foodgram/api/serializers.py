@@ -1,16 +1,14 @@
 from django.contrib.auth import authenticate
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
-from django.core.validators import MaxLengthValidator
 
 from content.models import (Favourite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingList, Tag)
 from core.seralizers import BasicRecipeSerializer, BasicUserSerializer
 from users.models import User
-from users.validators import validate_username
 
 
-class CustomTokenSerializer(serializers.Serializer):
+class TokenSerializer(serializers.Serializer):
     """Сериалайзер для работы с токеном."""
     email = serializers.EmailField()
     password = serializers.CharField()
@@ -27,23 +25,7 @@ class UserSerializer(BasicUserSerializer):
     class Meta:
         model = User
         fields = BasicUserSerializer.Meta.fields + ('password',)
-        extra_kwargs = {
-            'password': {
-                'write_only': True, 'validators': [MaxLengthValidator(150)]
-                },
-            'username': {
-                'validators': [validate_username, MaxLengthValidator(150)]
-                },
-            'first_name': {
-                'validators': [MaxLengthValidator(150)]
-                },
-            'last_name': {
-                'validators': [MaxLengthValidator(150)]
-                },
-            'email': {
-                'validators': [MaxLengthValidator(254)]
-                },
-            }
+        extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
         user = User(
@@ -164,11 +146,13 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
         author = self.context['request'].user
         recipe = Recipe.objects.create(author=author, **validated_data)
         recipe.tags.set(tags)
-        for ingredient_data in ingredients_data:
-            ingredient_id = ingredient_data['id']
-            amount = ingredient_data['amount']
-            ingredient = Ingredient.objects.get(id=ingredient_id)
-            RecipeIngredient.objects.create(
-                recipe=recipe, ingredient=ingredient, amount=amount
+        recipe_ingredients = [
+            RecipeIngredient(
+                recipe=recipe,
+                ingredient=Ingredient.objects.get(id=ingredient_data['id']),
+                amount=ingredient_data['amount']
             )
+            for ingredient_data in ingredients_data
+        ]
+        RecipeIngredient.objects.bulk_create(recipe_ingredients)
         return recipe
