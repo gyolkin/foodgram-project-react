@@ -1,20 +1,19 @@
+from django.conf import settings
 from django.core.validators import MinValueValidator
 from django.db import models
 
 from users.models import User
-from .constants import (HEX_LENGTH, LENGTH_10, LENGTH_100, LENGTH_200,
-                        LENGTH_1000)
 from .validators import validate_hex
 
 
 class Tag(models.Model):
     """Цветные теги для рецептов."""
     name = models.CharField(
-        max_length=LENGTH_100,
+        max_length=settings.MEDIUM_LENGTH,
         unique=True
     )
     color = models.CharField(
-        max_length=HEX_LENGTH,
+        max_length=settings.HEX_LENGTH,
         validators=[validate_hex],
         unique=True
     )
@@ -29,10 +28,10 @@ class Tag(models.Model):
 class Ingredient(models.Model):
     """Ингредиенты для рецептов."""
     name = models.CharField(
-        max_length=LENGTH_100
+        max_length=settings.MEDIUM_LENGTH
     )
     measurement_unit = models.CharField(
-        max_length=LENGTH_10
+        max_length=settings.SHORT_LENGTH
     )
 
     def __str__(self):
@@ -42,11 +41,9 @@ class Ingredient(models.Model):
 class Recipe(models.Model):
     """Рецепты."""
     name = models.CharField(
-        max_length=LENGTH_200
+        max_length=settings.LONG_LENGTH
     )
-    text = models.TextField(
-        max_length=LENGTH_1000
-    )
+    text = models.TextField()
     image = models.ImageField(
         upload_to='images'
     )

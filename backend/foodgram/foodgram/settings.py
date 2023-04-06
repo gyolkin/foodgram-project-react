@@ -142,3 +142,10 @@ AUTHENTICATION_BACKENDS = [
     'users.backends.EmailBackend',
     'django.contrib.auth.backends.ModelBackend',
 ]
+
+USER_FIELD_LENGTH = 150
+USER_LONG_FIELD_LENGTH = 254
+HEX_LENGTH = 7
+SHORT_LENGTH = 10
+MEDIUM_LENGTH = 100
+LONG_LENGTH = 200

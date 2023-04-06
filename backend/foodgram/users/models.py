@@ -1,29 +1,26 @@
+from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
-
-from .constants import LENGTH_150, LENGTH_254
-from .validators import validate_username
 
 
 class User(AbstractUser):
     """Кастомная пользовательская модель."""
     username = models.CharField(
-        max_length=LENGTH_150,
-        unique=True,
-        validators=[validate_username]
+        max_length=settings.USER_FIELD_LENGTH,
+        unique=True
     )
     email = models.EmailField(
-        max_length=LENGTH_254,
+        max_length=settings.USER_LONG_FIELD_LENGTH,
         unique=True
     )
     password = models.CharField(
-        max_length=LENGTH_150
+        max_length=settings.USER_FIELD_LENGTH
     )
     first_name = models.CharField(
-        max_length=LENGTH_150
+        max_length=settings.USER_FIELD_LENGTH
     )
     last_name = models.CharField(
-        max_length=LENGTH_150
+        max_length=settings.USER_FIELD_LENGTH
     )
 
 
