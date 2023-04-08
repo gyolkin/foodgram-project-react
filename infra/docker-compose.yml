@@ -19,9 +19,8 @@ services:
       - ./.env
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: gyolkin/frontend_foodgram:latest
+    restart: always
     volumes:
       - ../frontend/:/app/result_build/
 
