@@ -1,10 +1,9 @@
-from django.contrib.auth import authenticate
-from drf_extra_fields.fields import Base64ImageField
-from rest_framework import serializers
-
 from content.models import (Favourite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingList, Tag)
 from core.seralizers import BasicRecipeSerializer, BasicUserSerializer
+from django.contrib.auth import authenticate
+from drf_extra_fields.fields import Base64ImageField
+from rest_framework import serializers
 from users.models import User
 
 
@@ -43,7 +42,7 @@ class SubscribeUserSerializer(BasicUserSerializer):
     """Сериалайзер для работы с пользователями при обработке подписок."""
     recipes = BasicRecipeSerializer(many=True)
     recipes_count = serializers.SerializerMethodField()
-    
+
     class Meta:
         model = User
         fields = BasicUserSerializer.Meta.fields + ('recipes', 'recipes_count')

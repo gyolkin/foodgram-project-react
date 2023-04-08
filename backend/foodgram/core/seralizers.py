@@ -1,7 +1,7 @@
-from rest_framework import serializers
-
-from users.models import Follow, User
 from content.models import Recipe
+from rest_framework import serializers
+from users.models import Follow, User
+
 
 class BasicUserSerializer(serializers.ModelSerializer):
     """Базовый сериалайзер для работы с пользователями."""

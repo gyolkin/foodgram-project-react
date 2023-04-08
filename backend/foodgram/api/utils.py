@@ -18,7 +18,7 @@ def file_create(recipes):
                 aggregated_ingredients[key] = recipe_ingredient.amount
 
     content = "\n".join(
-        [f"{ingredient[0]} {amount} {ingredient[1]}" 
+        [f"{ingredient[0]} {amount} {ingredient[1]}"
          for ingredient, amount in aggregated_ingredients.items()]
     )
     byte_content = content.encode('utf-8')

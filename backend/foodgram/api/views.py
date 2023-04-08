@@ -1,18 +1,18 @@
+from content.models import Favourite, Ingredient, Recipe, ShoppingList, Tag
+from core.seralizers import BasicRecipeSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework import (generics, mixins, permissions, status, views,
                             viewsets)
 from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
-
-from content.models import Favourite, Ingredient, Recipe, ShoppingList, Tag
-from core.seralizers import BasicRecipeSerializer
 from users.models import Follow, User
+
 from .filters import RecipeFilter
 from .paginators import LimitPagination
 from .permissions import IsAuthorOrReadOnly
-from .serializers import (CreateRecipeSerializer, TokenSerializer,
-                          IngredientSerializer, RecipeSerializer,
-                          SubscribeUserSerializer, TagSerializer)
+from .serializers import (CreateRecipeSerializer, IngredientSerializer,
+                          RecipeSerializer, SubscribeUserSerializer,
+                          TagSerializer, TokenSerializer)
 from .utils import file_create
 
 
@@ -169,7 +169,8 @@ class ShoppingListView(views.APIView):
 
     def post(self, request, id):
         recipe = get_object_or_404(Recipe, id=id)
-        if ShoppingList.objects.filter(user=request.user, recipe=recipe).exists():
+        if ShoppingList.objects.filter(
+            user=request.user, recipe=recipe).exists():
             return Response(
                 {'errors': 'Вы уже добавили этот рецепт.'},
                 status=status.HTTP_400_BAD_REQUEST

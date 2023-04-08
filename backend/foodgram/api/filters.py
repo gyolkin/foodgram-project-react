@@ -1,7 +1,6 @@
+from content.models import Favourite, Recipe, ShoppingList
 from django_filters.rest_framework import (BooleanFilter, CharFilter,
                                            FilterSet, NumberFilter)
-
-from content.models import Favourite, Recipe, ShoppingList
 
 
 class RecipeFilter(FilterSet):
@@ -22,8 +21,7 @@ class RecipeFilter(FilterSet):
             )
             if value:
                 return queryset.filter(id__in=recipe_ids)
-            else:
-                return queryset.exclude(id__in=recipe_ids)
+            return queryset.exclude(id__in=recipe_ids)
         return queryset.none() if value else queryset
 
     def filter_is_in_shopping_cart(self, queryset, name, value):
@@ -34,6 +32,5 @@ class RecipeFilter(FilterSet):
             )
             if value:
                 return queryset.filter(id__in=recipe_ids)
-            else:
-                return queryset.exclude(id__in=recipe_ids)
+            return queryset.exclude(id__in=recipe_ids)
         return queryset.none() if value else queryset
