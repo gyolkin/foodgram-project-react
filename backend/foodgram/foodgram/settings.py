@@ -1,4 +1,3 @@
-from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -110,7 +109,7 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
-STATICFILES_DIRS = (BASE_DIR / 'static',)
+STATIC_ROOT = BASE_DIR / 'static'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = BASE_DIR / 'media'
@@ -125,16 +124,12 @@ REST_FRAMEWORK = {
     'PAGE_SIZE': 6,
 }
 
-SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=1),
-    'AUTH_HEADER_TYPES': ('Bearer',),
-}
-
 DJOSER = {
     'LOGIN_FIELD': 'email',
     'SERIALIZERS': {
         'user_create': 'api.serializers.UserSerializer',
-        'user': 'api.serializers.UserSerializer'
+        'user': 'api.serializers.UserSerializer',
+        'current_user': 'api.serializers.UserSerializer'
     }
 }
 
