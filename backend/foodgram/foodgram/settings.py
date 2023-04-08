@@ -67,8 +67,8 @@ if DEBUG:
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
             'NAME': BASE_DIR / 'db.sqlite3',
-            }
         }
+    }
 else:
     DATABASES = {
         'default': {
@@ -78,8 +78,8 @@ else:
             'PASSWORD': env('POSTGRES_PASSWORD', default='postgres'),
             'HOST': env('DB_HOST', default='host'),
             'PORT': env('DB_PORT', default='port'),
-            }
         }
+    }
 
 AUTH_PASSWORD_VALIDATORS = [
     {

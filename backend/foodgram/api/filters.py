@@ -1,6 +1,7 @@
-from content.models import Favourite, Recipe, ShoppingList
 from django_filters.rest_framework import (BooleanFilter, CharFilter,
                                            FilterSet, NumberFilter)
+
+from content.models import Favourite, Recipe, ShoppingList
 
 
 class RecipeFilter(FilterSet):

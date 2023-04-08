@@ -1,9 +1,10 @@
-from content.models import (Favourite, Ingredient, Recipe, RecipeIngredient,
-                            ShoppingList, Tag)
-from core.seralizers import BasicRecipeSerializer, BasicUserSerializer
 from django.contrib.auth import authenticate
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
+
+from content.models import (Favourite, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingList, Tag)
+from core.seralizers import BasicRecipeSerializer, BasicUserSerializer
 from users.models import User
 
 
