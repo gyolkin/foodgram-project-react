@@ -25,9 +25,10 @@ class LoginView(views.APIView):
         if serializer.is_valid(raise_exception=True):
             user = serializer.validated_data
             refresh = RefreshToken.for_user(user)
-            return Response({
+            response = {
                 'auth_token': str(refresh.access_token),
-            })
+            }
+            return Response(response, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -65,7 +66,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return RecipeSerializer
 
     def get_permissions(self):
-        if self.action == 'retrieve':
+        if self.action in ('retrieve', 'list'):
             permission_classes = (permissions.AllowAny,)
         elif self.action in ('partial_update', 'destroy'):
             permission_classes = (IsAuthorOrReadOnly,)

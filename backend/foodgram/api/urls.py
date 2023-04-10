@@ -59,14 +59,15 @@ urlpatterns = [
         UserViewSet.as_view({'post': 'set_password'}),
         name='user_set_password'
     ),
-    path(
-        'auth/token/login/',
-        LoginView.as_view(),
-        name='login'
-    ),
-    path(
-        'auth/token/logout/',
-        TokenDestroyView.as_view(),
-        name='logout'
-    ),
+    # path(
+    #     'auth/token/login/',
+    #     LoginView.as_view(),
+    #     name='login'
+    # ),
+    # path(
+    #     'auth/token/logout/',
+    #     TokenDestroyView.as_view(),
+    #     name='logout'
+    # ),
+    path('auth/', include('djoser.urls.authtoken')),
 ]
