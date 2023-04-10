@@ -7,6 +7,12 @@ services:
     env_file:
       - ./.env
 
+  frontend:
+    image: gyolkin/frontend_foodgram:latest
+    restart: always
+    volumes:
+      - ../frontend/:/app/result_build/
+
   backend:
     image: gyolkin/backend_foodgram:latest
     restart: always
@@ -17,12 +23,6 @@ services:
       - db
     env_file:
       - ./.env
-
-  frontend:
-    image: gyolkin/frontend_foodgram:latest
-    restart: always
-    volumes:
-      - ../frontend/:/app/result_build/
 
   nginx:
     image: nginx:1.19.3
