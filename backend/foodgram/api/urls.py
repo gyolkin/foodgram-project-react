@@ -1,9 +1,9 @@
 from django.urls import include, path
-from djoser.views import TokenDestroyView, UserViewSet
+from djoser.views import UserViewSet
 from rest_framework.routers import SimpleRouter
 
 from .views import (DownloadShoppingList, FavouriteView, IngredientViewSet,
-                    LoginView, RecipeViewSet, ShoppingListView, SubscribeView,
+                    RecipeViewSet, ShoppingListView, SubscribeView,
                     SubscribitionsView, TagViewSet)
 
 router = SimpleRouter()
@@ -59,15 +59,5 @@ urlpatterns = [
         UserViewSet.as_view({'post': 'set_password'}),
         name='user_set_password'
     ),
-    # path(
-    #     'auth/token/login/',
-    #     LoginView.as_view(),
-    #     name='login'
-    # ),
-    # path(
-    #     'auth/token/logout/',
-    #     TokenDestroyView.as_view(),
-    #     name='logout'
-    # ),
     path('auth/', include('djoser.urls.authtoken')),
 ]

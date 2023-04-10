@@ -1,4 +1,3 @@
-from django.contrib.auth import authenticate
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
@@ -6,18 +5,6 @@ from content.models import (Favourite, Ingredient, Recipe, RecipeIngredient,
                             ShoppingList, Tag)
 from core.seralizers import BasicRecipeSerializer, BasicUserSerializer
 from users.models import User
-
-
-class TokenSerializer(serializers.Serializer):
-    """Сериалайзер для работы с токеном."""
-    email = serializers.EmailField()
-    password = serializers.CharField()
-
-    def validate(self, attrs):
-        user = authenticate(email=attrs['email'], password=attrs['password'])
-        if not user:
-            raise serializers.ValidationError('Неверный email или пароль.')
-        return user
 
 
 class UserSerializer(BasicUserSerializer):

@@ -2,34 +2,17 @@ from django.shortcuts import get_object_or_404
 from rest_framework import (generics, mixins, permissions, status, views,
                             viewsets)
 from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken
 
 from .filters import RecipeFilter
 from .paginators import LimitPagination
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (CreateRecipeSerializer, IngredientSerializer,
                           RecipeSerializer, SubscribeUserSerializer,
-                          TagSerializer, TokenSerializer)
+                          TagSerializer)
 from .utils import file_create
 from content.models import Favourite, Ingredient, Recipe, ShoppingList, Tag
 from core.seralizers import BasicRecipeSerializer
 from users.models import Follow, User
-
-
-class LoginView(views.APIView):
-    """Представление для получения токена авторизации пользователем."""
-    permission_classes = (permissions.AllowAny,)
-
-    def post(self, request):
-        serializer = TokenSerializer(data=request.data)
-        if serializer.is_valid(raise_exception=True):
-            user = serializer.validated_data
-            refresh = RefreshToken.for_user(user)
-            response = {
-                'auth_token': str(refresh.access_token),
-            }
-            return Response(response, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 class TagViewSet(mixins.ListModelMixin,
