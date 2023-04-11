@@ -1,6 +1,5 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 
 from .validators import username_blacklist
@@ -21,12 +20,10 @@ class User(AbstractUser):
         max_length=settings.USER_FIELD_LENGTH
     )
     first_name = models.CharField(
-        max_length=settings.USER_FIELD_LENGTH,
-        validators=[UnicodeUsernameValidator]
+        max_length=settings.USER_FIELD_LENGTH
     )
     last_name = models.CharField(
-        max_length=settings.USER_FIELD_LENGTH,
-        validators=[UnicodeUsernameValidator]
+        max_length=settings.USER_FIELD_LENGTH
     )
 
 
