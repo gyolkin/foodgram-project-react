@@ -1,7 +1,7 @@
 from django_filters.rest_framework import (BooleanFilter, CharFilter,
                                            FilterSet, NumberFilter)
 
-from content.models import Favourite, Recipe, ShoppingList, Ingredient
+from content.models import Favourite, Ingredient, Recipe, ShoppingList
 
 
 class RecipeFilter(FilterSet):

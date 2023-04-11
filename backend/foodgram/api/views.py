@@ -1,16 +1,16 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import (generics, mixins, permissions, status, views,
                             viewsets)
-from rest_framework.response import Response
 from rest_framework.decorators import action
+from rest_framework.response import Response
 
-from .filters import RecipeFilter, IngredientFilter
+from .filters import IngredientFilter, RecipeFilter
 from .paginators import LimitPagination
 from .permissions import IsAuthorOrReadOnly
 from .serializers import (CreateRecipeSerializer, IngredientSerializer,
                           RecipeSerializer, SubscribeUserSerializer,
                           TagSerializer)
-from .utils import file_create, create_obj, delete_obj
+from .utils import create_obj, delete_obj, file_create
 from content.models import Favourite, Ingredient, Recipe, ShoppingList, Tag
 from core.seralizers import BasicRecipeSerializer
 from users.models import Follow, User
@@ -82,7 +82,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         if request.method == 'POST':
             return create_obj(request, pk, ShoppingList, BasicRecipeSerializer)
         return delete_obj(request, pk, ShoppingList)
-    
+
     @action(detail=False, methods=('GET',),)
     def download_shopping_cart(self, request):
         shopping_list = ShoppingList.objects.filter(user=request.user)
