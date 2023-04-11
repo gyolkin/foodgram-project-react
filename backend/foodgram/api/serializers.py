@@ -127,6 +127,14 @@ class CreateRecipeSerializer(serializers.ModelSerializer):
             'ingredients', 'tags', 'image', 'name', 'text', 'cooking_time'
         )
 
+    def validate(self, data):
+        ingredients = data.get('recipe_ingredients')
+        if not ingredients:
+            raise serializers.ValidationError(
+                'Рецепт должен содержать хотя бы один ингредиент.'
+            )
+        return data
+
     def create(self, validated_data):
         ingredients_data = validated_data.pop('recipe_ingredients')
         tags = validated_data.pop('tags')

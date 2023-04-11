@@ -1,13 +1,17 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
+
+from .validators import username_blacklist
 
 
 class User(AbstractUser):
     """Кастомная пользовательская модель."""
     username = models.CharField(
         max_length=settings.USER_FIELD_LENGTH,
-        unique=True
+        unique=True,
+        validators=[username_blacklist]
     )
     email = models.EmailField(
         max_length=settings.USER_LONG_FIELD_LENGTH,
@@ -17,10 +21,12 @@ class User(AbstractUser):
         max_length=settings.USER_FIELD_LENGTH
     )
     first_name = models.CharField(
-        max_length=settings.USER_FIELD_LENGTH
+        max_length=settings.USER_FIELD_LENGTH,
+        validators=[UnicodeUsernameValidator]
     )
     last_name = models.CharField(
-        max_length=settings.USER_FIELD_LENGTH
+        max_length=settings.USER_FIELD_LENGTH,
+        validators=[UnicodeUsernameValidator]
     )
 
 

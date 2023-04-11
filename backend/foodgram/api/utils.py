@@ -1,6 +1,11 @@
 from io import BytesIO
 
 from django.http import FileResponse
+from django.shortcuts import get_object_or_404
+from rest_framework import status
+from rest_framework.response import Response
+
+from content.models import Recipe
 
 
 def file_create(recipes):
@@ -29,3 +34,34 @@ def file_create(recipes):
     )
     response['Content-Type'] = 'text/plain'
     return response
+
+
+def create_obj(request, pk, model, serializer):
+    """Функция для создания объекта, связанного с рецептами"""
+    recipe = get_object_or_404(Recipe, id=pk)
+    _, created = model.objects.get_or_create(
+        user=request.user, recipe=recipe
+    )
+    if not created:
+        return Response(
+            {'errors': 'Вы уже выполнили это действие.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    serializer = serializer(
+        recipe, context={'request': request}
+    )
+    return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+def delete_obj(request, pk, model):
+    """Функция для удаления объекта, связанного с рецептами"""
+    recipe = get_object_or_404(Recipe, id=pk)
+    obj = model.objects.filter(
+        user=request.user, recipe=recipe).first()
+    if not obj:
+        return Response(
+            {'errors': 'Невозможно выполнить это действие.'},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    obj.delete()
+    return Response(status=status.HTTP_204_NO_CONTENT)
