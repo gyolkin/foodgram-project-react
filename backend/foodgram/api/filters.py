@@ -13,6 +13,7 @@ class RecipeFilter(FilterSet):
     author = NumberFilter(field_name='author__id')
     tags = ModelMultipleChoiceFilter(
         field_name='tags__slug',
+        to_field_name='slug',
         queryset=Tag.objects.all()
     )
 
